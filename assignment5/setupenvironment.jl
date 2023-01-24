@@ -10,15 +10,9 @@ println("workers ids are ", workers())
 @everywhere include("./assignment5.jl")
 
 
-function sim(RMSE, particle_count, time_steps)
-    #RMSE = zeros(length(particle_count),length(time_steps)) # Store the RMS errors
+function sim(particle_count, time_steps)
     propagated_particles = 0 # To count the number of particle propagations
-    #for (Ti,T) in enumerate(time_steps)
-    pmap(eachindex(time_steps)) do Ti
-        T = time_steps[Ti]
-        for (Ni, N) in enumerate(particle_count)
-        #pmap(eachindex(particle_count)) do Ni
-            N = particle_count[Ni]
+    retval = pmap(Iterators.product(particle_count, time_steps)) do (N, T) # This syntax creates a anonymous function passing (N, T) to the body
             propagated_particles
             montecarlo_runs = maximum(particle_count)*maximum(time_steps) ÷ T ÷ N # Calculate how many Monte-Carlo runs to perform for the current T,N configuration
             RMS = 0
@@ -38,28 +32,20 @@ function sim(RMSE, particle_count, time_steps)
                 xh = pf( y, N, g, f, σw0 , xp, w, we) # Run the particle filter
                 RMS += rms(x-xh) # Store the error
             end # MC
-            println("T is $T and N is $N, before RMSE is $RMSE")
-            RMSE[Ni,Ti] = RMS/montecarlo_runs # Store the mean of the error for this T,N configuration
-            println("T is $T and N is $N, after RMSE is $RMSE")
             propagated_particles += montecarlo_runs*N*T # Add the number of performed particle propagations
-            
-        end # N
-        #@show T
-    end # T
+            RMS/montecarlo_runs # Store the mean of the error for this T,N configuration
+    end # 
     println("Propagated $propagated_particles particles")
-    #
-    return RMSE
+    return retval
 end # begin @time
 
 @everywhere particle_count = [5, 30, 100, 300, 1000, 10_000]
 @everywhere time_steps = [20, 200, 2000]
 @everywhere RMSE = zeros(length(particle_count),length(time_steps))
-@time RMSE = sim(RMSE, particle_count, time_steps)
+@time RMSE = sim(particle_count, time_steps)
 
 using Plots
 function plotting(RMSE, particle_count, time_steps)
-    time_steps = [20, 200, 2000]
-    particle_count = [5, 30, 100, 300, 1000, 10_000]
     legend_strings = ["$(time_steps[i]) time steps" for i = 1:length(time_steps)]
     legend_strings = reshape(legend_strings,1,:)
     scatter(particle_count,RMSE, title="RMS errors vs Number of particles", xscale=:log10, lab=legend_strings)
