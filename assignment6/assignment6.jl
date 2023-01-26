@@ -1,9 +1,6 @@
 using Pkg
 using Zygote
 using BenchmarkTools
-# v1 = :(1/sqrt(:sigma))
-# ξr = :(v1^2 - :sigmaDot^2)
-# L(:ξ::Vector) = :(:ξ - ξr)^2
 
 function cost(x::Vector)
     return [sqrt(sum(x.^2)), sin(sum(x.^2)), cos(sum(x.^2)), tan(sum(x.^2))]
