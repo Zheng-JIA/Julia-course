@@ -1,0 +1,5 @@
+[deps]
+ControlSystems = "a6e380b2-a6ca-5380-bf3e-84a91bcd477e"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+ReachabilityAnalysis = "1e97bd63-91d1-579d-8e8d-501d2b57c93f"
